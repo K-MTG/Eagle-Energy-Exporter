@@ -1,0 +1,15 @@
+services:
+  eagle-energy-exporter:
+    build: .
+    container_name: eagle-energy-exporter
+    ports:
+      - "39501:39501"
+    environment:
+      PROMETHEUS_REMOTE_WRITE_ENDPOINT: "http://your-prometheus-server:9090/api/v1/write"
+      PROMETHEUS_OPT_LABELS: '{"0xabc123": {"location": "irvine"}, "0xabc111": {"location": "fh"}}'
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"  # Limit each log file to 10MB
+        max-file: "3"    # Keep only 3 log files before rotating
