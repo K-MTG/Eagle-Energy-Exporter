@@ -44,8 +44,8 @@ Prometheus using the **Prometheus Remote Write Exporter**.
 
    ```yaml
    environment:
-     - PROMETHEUS_REMOTE_WRITE_ENDPOINT=http://your-prometheus-server:9090/api/v1/write
-     - PROMETHEUS_OPT_LABELS={"0xabc123": {"location": "Home"}}
+     - PROMETHEUS_REMOTE_WRITE_ENDPOINT: "http://your-prometheus-server:9090/api/v1/write"
+     - PROMETHEUS_OPT_LABELS: '{"0xabc123": {"location": "home1"}, "0xabc111": {"location": "home2"}}'
    ```
 
 4. **Build and start the container**:
