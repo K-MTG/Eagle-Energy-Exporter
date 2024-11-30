@@ -6,7 +6,7 @@ services:
       - "39501:39501"
     environment:
       PROMETHEUS_REMOTE_WRITE_ENDPOINT: "http://your-prometheus-server:9090/api/v1/write"
-      PROMETHEUS_OPT_LABELS: '{"0xabc123": {"location": "irvine"}, "0xabc111": {"location": "fh"}}'
+      PROMETHEUS_OPT_LABELS: '{"0xabc123": {"location": "home1"}, "0xabc111": {"location": "home2"}}'
     restart: unless-stopped
     logging:
       driver: "json-file"
