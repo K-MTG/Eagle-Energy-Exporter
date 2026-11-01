@@ -18,9 +18,12 @@ from opentelemetry.semconv.resource import ResourceAttributes
 # FastAPI app initialization
 app = FastAPI()
 
-# Initialize Prometheus exporter with the endpoint from environment variables
+# Initialize Prometheus exporter with the endpoint from environment variables. The bearer token is
+# optional, for endpoints that require auth (e.g. vmauth).
+bearer_token = os.environ.get('PROMETHEUS_REMOTE_WRITE_BEARER_TOKEN')
 exporter = PrometheusRemoteWriteMetricsExporter(
-    endpoint=os.environ['PROMETHEUS_REMOTE_WRITE_ENDPOINT']
+    endpoint=os.environ['PROMETHEUS_REMOTE_WRITE_ENDPOINT'],
+    headers={'Authorization': f'Bearer {bearer_token}'} if bearer_token else None
 )
 
 # Define the resource that will be associated with metrics (e.g., service name)
@@ -53,6 +56,22 @@ instantaneous_demand_gauge = meter.create_gauge(
     name="instantaneous_demand",
     description="demand of energy",
     unit="kWh",
+)
+
+link_strength_gauge = meter.create_gauge(
+    name="link_strength",
+    description="strength of the ZigBee link to the meter",
+    unit="percent",
+)
+
+network_connected_gauge = meter.create_gauge(
+    name="network_connected",
+    description="1 if the device reports being connected to the meter, otherwise 0",
+)
+
+network_channel_gauge = meter.create_gauge(
+    name="network_channel",
+    description="ZigBee channel in use",
 )
 
 
@@ -222,16 +241,25 @@ class EagleParse:
         """
         Parse network-related information from the XML and update metrics.
 
-        This method extracts the link strength and stores it in the metrics.
+        This method extracts the link strength, connection status and channel, and stores them in the
+        metrics. Not every model reports all of them: the Eagle 3 sends neither link strength nor status.
         """
         network_info = self.root.find(".//NetworkInfo")
         if network_info is not None:
             self._state['network_info_received'] = True
-            # Extract link strength from network information and store it in metrics
+            self._metric['network_info'] = dict()
+
             link_strength = network_info.findtext("LinkStrength")
             if link_strength is not None:
-                link_strength = int(link_strength, 16)
-                self._metric['network_info'] = {"link_strength": link_strength}
+                self._metric['network_info']['link_strength'] = int(link_strength, 16)
+
+            status = network_info.findtext("Status")
+            if status is not None:
+                self._metric['network_info']['connected'] = int(status == "Connected")
+
+            channel = network_info.findtext("Channel")
+            if channel is not None:
+                self._metric['network_info']['channel'] = int(channel)
 
     def get_metric_labels(self) -> Dict[str, dict]:
         """
@@ -267,6 +295,14 @@ class EagleParse:
             summation_received_gauge.set(metric_data['current_summation']['summation_received'], ml['labels'])
         if 'instantaneous_demand' in metric_data:
             instantaneous_demand_gauge.set(metric_data['instantaneous_demand']['demand'], ml['labels'])
+
+        network_info = metric_data.get('network_info', {})
+        if 'link_strength' in network_info:
+            link_strength_gauge.set(network_info['link_strength'], ml['labels'])
+        if 'connected' in network_info:
+            network_connected_gauge.set(network_info['connected'], ml['labels'])
+        if 'channel' in network_info:
+            network_channel_gauge.set(network_info['channel'], ml['labels'])
 
 
 @app.post("/")

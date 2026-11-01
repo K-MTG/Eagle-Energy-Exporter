@@ -1,3 +1,30 @@
-fastapi
-uvicorn
-opentelemetry-exporter-prometheus-remote-write
+# Direct dependencies are fastapi, uvicorn and opentelemetry-exporter-prometheus-remote-write. Everything
+# is pinned because the OpenTelemetry packages decide the metric and label names; upgrading them can
+# start new series and break dashboards, so do it on purpose.
+annotated-types==0.7.0
+anyio==4.6.2.post1
+certifi==2024.8.30
+charset-normalizer==3.4.0
+click==8.1.7
+cramjam==2.9.0
+Deprecated==1.2.15
+fastapi==0.115.5
+h11==0.14.0
+idna==3.10
+importlib_metadata==8.5.0
+opentelemetry-api==1.28.2
+opentelemetry-exporter-prometheus-remote-write==0.49b2
+opentelemetry-sdk==1.28.2
+opentelemetry-semantic-conventions==0.49b2
+protobuf==4.25.5
+pydantic==2.10.2
+pydantic_core==2.27.1
+python-snappy==0.7.3
+requests==2.32.3
+sniffio==1.3.1
+starlette==0.41.3
+typing_extensions==4.12.2
+urllib3==2.2.3
+uvicorn==0.32.1
+wrapt==1.17.0
+zipp==3.21.0

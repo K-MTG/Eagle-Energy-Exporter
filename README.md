@@ -39,6 +39,7 @@ Prometheus using the **Prometheus Remote Write Exporter**.
    - Locate the `environment` section.
    - Update the `PROMETHEUS_REMOTE_WRITE_ENDPOINT` with your Prometheus remote write endpoint (e.g., `http://your-prometheus-server:9090/api/v1/write`).
    - Optionally, update or remove the `PROMETHEUS_OPT_LABELS` with any custom labels you'd like to associate with specific devices in the JSON format. 
+   - If the endpoint requires auth (e.g. vmauth), set `PROMETHEUS_REMOTE_WRITE_BEARER_TOKEN`. Keep it in an `env_file` rather than in a tracked file.
 
    Example:
 
@@ -104,10 +105,15 @@ For Eagle 3, configuration is done through the cloud portal. Follow these steps:
    - `summation_delivered`: The total energy delivered (in kWh).
    - `summation_received`: The total energy received (in kWh).
    - `instantaneous_demand`: The current energy demand (in kWh).
-   - `network_info`: Link strength (optional, depending on the device).
+   - `network_info`, depending on the device: `link_strength` (percent), `network_connected` (1 when the device reports `Connected`) and `network_channel`. The Eagle 3 reports only the channel.
 3. The **parsed metrics** are then **remote-written to Prometheus** using the **Prometheus Remote Write Exporter**. These metrics are not exposed via HTTP for scraping directly.
 
 ## Changelog
+
+### v1.1.0 - 2026-11-01
+- Publish `network_info` as metrics: `link_strength_percent`, `network_connected` and `network_channel`.
+- Add optional bearer token auth for the remote write endpoint (`PROMETHEUS_REMOTE_WRITE_BEARER_TOKEN`).
+- Pin all dependencies, and copy only `main.py` into the image.
 
 ### v1.0.0 - 2024-11-29
 - Initial release of Eagle Energy Exporter.

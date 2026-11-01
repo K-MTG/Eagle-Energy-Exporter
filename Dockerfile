@@ -14,8 +14,9 @@ COPY requirements.txt /app/
 # Install dependencies from requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code into the container
-COPY . /app/
+# Copy only the application code, so deployment files next to it (env files holding a token, compose
+# overrides) never end up in the image
+COPY main.py /app/
 
 # Expose the port FastAPI will run on (default is 39501)
 EXPOSE 39501
